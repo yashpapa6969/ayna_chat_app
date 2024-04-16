@@ -22,7 +22,7 @@ const server = app.listen(process.env.PORT || 3000, () =>
 
 const io = socket(server, {
   cors: {
-    origin: "https://poor-frogs-worry.loca.lt",
+    origin: "http://13.233.60.208:5000",
     credentials: true,
   },
 });

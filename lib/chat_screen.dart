@@ -9,6 +9,12 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 
 import 'package:uuid/uuid.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ChatScreen extends StatefulWidget {
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -18,9 +24,7 @@ class _ChatScreenState extends State<ChatScreen> {
   IO.Socket? socket;
   List<dynamic> contacts = [];
   dynamic currentUser;
-  dynamic currentChat;
   bool isLoading = false;
-  List<dynamic> messages = []; // Define the messages list here
 
   @override
   void initState() {
@@ -34,17 +38,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (userJson == null) {
       Navigator.pushReplacementNamed(context, '/login');
     } else {
-      var decodedUser = jsonDecode(userJson);
-      if (decodedUser != null && decodedUser['user'] != null) {
-        setState(() {
-          currentUser = decodedUser['user'];
-        });
+      setState(() {
+        currentUser = jsonDecode(userJson)['user'];
         connectSocket();
         fetchContacts();
-      } else {
-        // Handle the scenario where user data is not properly formatted
-        print("Error: User data is not in expected format.");
-      }
+      });
     }
   }
 
@@ -67,50 +65,40 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       var response = await http.get(Uri.parse('${URL.url}/api/auth/allusers/${currentUser['_id']}'));
       if (response.statusCode == 200) {
-        List<dynamic> responseContacts = jsonDecode(response.body);
-        if (responseContacts.isNotEmpty) {
-          setState(() {
-            contacts = responseContacts;
-          });
-        } else {
-          print("No contacts found.");
-        }
+        setState(() {
+          contacts = jsonDecode(response.body);
+          isLoading = false;
+        });
       } else {
-        print('Error fetching contacts: Status Code ${response.statusCode}');
+        print('Error fetching contacts: ${response.statusCode}');
       }
     } catch (e) {
-      print('Exception fetching contacts: $e');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+      print('Error fetching contacts: $e');
     }
-  }
-
-
-  void handleChatChange(dynamic selectedContact) {
-    setState(() {
-      currentChat = selectedContact;
-      messages = []; // Clear messages for the previous chat
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return
-      Scaffold(
+    return Scaffold(
       appBar: AppBar(title: Text("Contacts")),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
+          : ListView.separated(
         itemCount: contacts.length,
+        separatorBuilder: (context, index) => Divider(),
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text(contacts[index]['username']),
+            leading: CircleAvatar(
+              child: Text(contacts[index]['username'][0]),
+            ),
+            title: Text(
+              contacts[index]['username'],
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
-                   selectedUser: contacts[index],
+                  selectedUser: contacts[index],
                 ),
               ));
             },
@@ -120,7 +108,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 }
-
 
 
 
@@ -278,190 +265,4 @@ print(response.body);
   }
 }
 
-//
-// class ChatContainer extends StatefulWidget {
-//   final dynamic chat;
-//   final IO.Socket? socket;
-//
-//   ChatContainer({required this.chat, this.socket});
-//
-//   @override
-//   _ChatContainerState createState() => _ChatContainerState();
-// }
-//
-// class _ChatContainerState extends State<ChatContainer> {
-//   TextEditingController _messageController = TextEditingController();
-//   List<dynamic> messages = [];
-//   bool isLoading = false;
-//   dynamic currentUser;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     initUser();
-//     fetchMessages();
-//
-//   }
-//
-//   Future<void> initUser() async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     String? userJson = prefs.getString('user');
-//     if (userJson != null) {
-//       var decodedUser = jsonDecode(userJson);
-//       if (decodedUser != null && decodedUser['user'] != null) {
-//         setState(() {
-//           currentUser = decodedUser['user'];
-//         });
-//       } else {
-//         print("Error: User data is not in expected format.");
-//       }
-//     }
-//   }
-//
-//   Future<void> fetchMessages() async {
-//
-//     setState(() {
-//       isLoading = true;
-//     });
-//     try {
-//       print("current user-${currentUser}");
-//       print("current currentChat-${widget.chat.chat}");
-//
-//       var response = await http.post(
-//           Uri.parse('${URL.url}/api/messages/getmsg/'),
-//           body: jsonEncode({'from': currentUser['_id'], 'to': widget.chat['_id']}),
-//           headers: {'Content-Type': 'application/json'}
-//       );
-//       if (response.statusCode == 200) {
-//         List<dynamic> fetchedMessages = jsonDecode(response.body);
-//         if (fetchedMessages.isNotEmpty) {
-//           setState(() {
-//             messages = fetchedMessages.map((msg) {
-//               return {
-//                 'senderName': msg['from'] == currentUser['_id'] ? currentUser['username'] : widget.chat['username'],
-//                 'message': msg['message']['text'],
-//               };
-//             }).toList();
-//           });
-//         } else {
-//           print("No messages received.");
-//         }
-//       } else {
-//         print('Error fetching messages: Status Code ${response.statusCode}');
-//       }
-//     } catch (e) {
-//       print('Exception fetching messages: $e');
-//     } finally {
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
-//   }
-//
-//   Future<void> sendMessage(String message) async {
-//     if (currentUser == null || widget.chat == null) return;
-//
-//     try {
-//       var response = await http.post(
-//           Uri.parse('${URL.url}/api/messages/addmsg/'),
-//           body: jsonEncode({
-//             'from': currentUser['_id'],
-//             'to': widget.chat['_id'],
-//             'message': message,
-//           }),
-//           headers: {'Content-Type': 'application/json'}
-//       );
-//       if (response.statusCode == 200) {
-//         _messageController.clear();
-//         dynamic newMessage = jsonDecode(response.body);
-//         setState(() {
-//           messages.add({
-//             'senderName': currentUser['username'],
-//             'message': newMessage['message'],
-//           });
-//         });
-//       } else {
-//         print('Error sending message: Status Code ${response.statusCode}');
-//       }
-//     } catch (e) {
-//       print('Error sending message: $e');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Expanded(
-//             child: isLoading
-//                 ? Center(child: CircularProgressIndicator())
-//                 : ListView.builder(
-//               itemCount: messages.length,
-//               itemBuilder: (context, index) {
-//                 bool isSentByMe = messages[index]['senderName'] == currentUser['username'];
-//                 return Align(
-//                   alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-//                   child: Container(
-//                     padding: EdgeInsets.all(8),
-//                     margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-//                     decoration: BoxDecoration(
-//                       color: isSentByMe ? Colors.blue : Colors.grey[300],
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                     child: Text(messages[index]['message'],
-//                       style: TextStyle(color: isSentByMe ? Colors.white : Colors.black),
-//                     ),
-//                   ),
-//                 );
-//               },
-//             )
-//         ),
-//         Container(
-//           padding: EdgeInsets.all(8.0),
-//           child: Row(
-//             children: [
-//               Expanded(
-//                 child: TextField(
-//                   controller: _messageController,
-//                   decoration: InputDecoration(
-//                     hintText: 'Type a message...',
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(30),
-//                     ),
-//                     contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-//                   ),
-//                 ),
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.sentiment_satisfied),
-//                 onPressed: () {
-//                   // Emoji picker logic if implemented
-//                 },
-//               ),
-//               IconButton(
-//                 icon: Icon(Icons.send),
-//                 onPressed: () {
-//                   String message = _messageController.text.trim();
-//                   if (message.isNotEmpty) {
-//                     sendMessage(message);
-//                   }
-//                 },
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-//
-//
-//
-// class WelcomeWidget extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Text('Select a chat to start messaging', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-//     );
-//   }
-// }
+
