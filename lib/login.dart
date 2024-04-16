@@ -42,16 +42,29 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Login", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 SizedBox(height: 20),
+                Text("Welcome Back!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+                SizedBox(height: 50),
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Username", border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: "Username",
+                    prefixIcon: Icon(Icons.person),
+                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
                   validator: (value) => value!.isEmpty ? "Please enter username" : null,
                   onSaved: (value) => _username = value!,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    prefixIcon: Icon(Icons.lock),
+                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                  ),
                   obscureText: true,
                   validator: (value) => value!.isEmpty ? "Please enter password" : null,
                   onSaved: (value) => _password = value!,
@@ -63,18 +76,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _login,
                   child: Text("Login"),
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor, // Background color
+                    foregroundColor: Colors.white, // Text color
                     minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
                 ),
-                SizedBox(height: 20,),
-                ElevatedButton(
-                  onPressed:(){
-                    Navigator.of(context).pushReplacementNamed('/register'); // Navigates to home screen after registration
+                SizedBox(height: 15),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/register');
                   },
-                  child: Text("Not yet registered"),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                  ),
+                  child: Text("Not yet registered? Sign up"),
+                 
                 ),
               ],
             ),

@@ -9,12 +9,6 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 
 import 'package:uuid/uuid.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
 class ChatScreen extends StatefulWidget {
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -76,12 +70,25 @@ class _ChatScreenState extends State<ChatScreen> {
       print('Error fetching contacts: $e');
     }
   }
-
+  Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clears all data stored in SharedPreferences
+    Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Contacts")),
-      body: isLoading
+      appBar:AppBar(
+        title: Text("Contacts"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () async {
+              await logout();
+            },
+          ),
+        ],
+      ),     body: isLoading
           ? Center(child: CircularProgressIndicator())
           : ListView.separated(
         itemCount: contacts.length,

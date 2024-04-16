@@ -31,17 +31,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       setState(() => _isLoading = true);
 
       bool isRegistered = await _apiService.register(
-          _usernameController.text,
-          _emailController.text,
-          _passwordController.text
+        _usernameController.text,
+        _emailController.text,
+        _passwordController.text,
       );
       setState(() => _isLoading = false);
 
       if (isRegistered) {
-        Fluttertoast.showToast(msg: "Registration Successful", toastLength: Toast.LENGTH_SHORT);
-        Navigator.of(context).pushReplacementNamed('/login'); // Navigates to home screen after registration
+        Fluttertoast.showToast(
+          msg: "Registration Successful",
+          toastLength: Toast.LENGTH_SHORT,
+        );
+        Navigator.of(context).pushReplacementNamed('/login');
       } else {
-        Fluttertoast.showToast(msg: "Registration Failed", toastLength: Toast.LENGTH_SHORT);
+        Fluttertoast.showToast(
+          msg: "Registration Failed",
+          toastLength: Toast.LENGTH_SHORT,
+        );
       }
     }
   }
@@ -57,27 +63,48 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Register", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                Text(
+                  "Register",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _usernameController,
-                  decoration: InputDecoration(labelText: "Username", border: OutlineInputBorder()),
-                  validator: (value) => value!.isEmpty ? "Please enter username" : null,
+                  decoration: InputDecoration(
+                    labelText: "Username",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                  validator: (value) =>
+                  value!.isEmpty ? "Please enter username" : null,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _emailController,
-                  decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder()),
-                  validator: (value) => !value!.contains('@') ? "Please enter a valid email" : null,
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                  validator: (value) =>
+                  !value!.contains('@') ? "Please enter a valid email" : null,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder()),
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
                   obscureText: true,
-                  validator: (value) => value!.isEmpty ? "Please enter password" : null,
+                  validator: (value) =>
+                  value!.isEmpty ? "Please enter password" : null,
                 ),
-
                 SizedBox(height: 30),
                 _isLoading
                     ? CircularProgressIndicator()
@@ -87,6 +114,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 50),
                   ),
+                ),
+                SizedBox(height: 15),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  },
+                  child: Text("Already Have An Account?"),
                 ),
               ],
             ),
