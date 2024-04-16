@@ -17,8 +17,6 @@ This Flutter Chat App enables real-time communication between users through mess
 - Flutter
 - Dart
 - Node.js for backend services
-## images
-![Logo](./Images/chatScreen.jpeg)
 
 ## Packages
 
@@ -38,6 +36,13 @@ Ensure you have Flutter installed by running:
 ```sh
 flutter doctor
 ```
+## images
+![Logo](https://github.com/yashpapa6969/ayna_chat_app/blob/main/Images/Register.jpeg?raw=true "Register")
+![Logo](https://github.com/yashpapa6969/ayna_chat_app/blob/main/Images/Login.jpeg?raw=true "Login")
+![Logo](https://github.com/yashpapa6969/ayna_chat_app/blob/main/Images/ContactList.jpeg?raw=true "Contact")
+![Logo](https://github.com/yashpapa6969/ayna_chat_app/blob/main/Images/chatScreen.jpeg?raw=true "Chat")
+
+
 
 ### Installation
 
